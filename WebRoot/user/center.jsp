@@ -100,9 +100,7 @@
 									class="glyphicon glyphicon-log-out" aria-hidden="true"
 									style="padding-right: 5px;"></span>注销</a></li>
 						</ul></li>
-					<%
-						}
-					%>
+					<% } %>
 				</ul>
 			</div>
 			<!-- /.nav-collapse -->
