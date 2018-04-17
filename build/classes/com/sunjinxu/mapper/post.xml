@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sunjinxu.mapper.PostMapper">
+	<!-- 插入文章 -->
+	<insert id="insert" parameterType="com.sunjinxu.pojo.Post"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into post
+		(title,summary,content,status,create_at,update_at)
+		values(#{title},#{summary},#{content},#{status},#{create_at},#{update_at});
+	</insert>
+	<insert id="insertTag" parameterType="com.sunjinxu.pojo.Post"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into tag (tagName) values
+		(#{tagName});
+	</insert>
+	<insert id="insertAttributes" parameterType="com.sunjinxu.pojo.Post">
+		insert into
+		post_attributes (postId,typeId,userId,imgPath)
+		values(#{id},#{typeId},#{userId},#{imgPath});
+	</insert>
+	<insert id="insertPostTag" parameterType="com.sunjinxu.pojo.Post">
+		insert into post_tag
+		(postId,tagId)
+		values(#{id},#{tagId});
+	</insert>
+	<!-- 文章详情 -->
+	<select id="get" parameterType="_int" resultType="com.sunjinxu.pojo.Post">
+		select
+		post.id,post.title,post.summary,post.content,post.update_at,tag.tagName,post_attributes.userId,
+		(case when user.userName is null then user.account ELSE user.userName
+		end) AS
+		userName,type.typeName,post_attributes.view,post_attributes.collect,post_attributes.imgPath
+		from post,post_attributes,tag,post_tag,type,user
+		where
+		post.id=#{id}
+		and
+		post.status=2
+		and post_attributes.postId=post.id
+		and
+		post_attributes.userId=user.id
+		and post_attributes.typeId=type.id
+		and
+		post_tag.postId=post.id
+		and post_tag.tagId=tag.id
+	</select>
+	<select id="getFullOne" parameterType="_int" resultType="com.sunjinxu.pojo.Post">
+		select
+		post.id,post.title,post.summary,post.content,post.status,post.create_at,post.update_at,post_tag.tagId,tag.tagName,post_attributes.userId,user.userName,post_attributes.typeId,type.typeName,post_attributes.view,post_attributes.collect,post_attributes.imgPath
+		from post,post_attributes,tag,post_tag,type,user
+		where
+		post.id=#{id}
+		and
+		post_attributes.postId=post.id
+		and
+		post_attributes.userId=user.id
+		and
+		post_attributes.typeId=type.id
+		and
+		post_tag.postId=post.id
+		and
+		post_tag.tagId=tag.id
+	</select>
+	<select id="list" resultType="com.sunjinxu.pojo.Post">
+		SELECT
+		A.id,A.title,A.summary,B.collect,A.update_at,B.imgPath,B.typeId,B.userId,B.view,
+		(case when C.userName is null then C.account ELSE C.userName end) AS
+		userName
+		FROM post AS A,post_attributes AS B,user AS C
+		WHERE
+		A.id=B.postId AND
+		B.userId=C.id
+		order by update_at desc
+		limit
+		#{start},#{pageSize}
+	</select>
+	<select id="searchPostList" resultType="com.sunjinxu.pojo.Post">
+		SELECT
+		A.id,A.title,A.summary,B.collect,A.update_at,B.imgPath,B.typeId,B.userId,B.view,
+		(case when C.userName is null then C.account ELSE C.userName end) AS
+		userName
+		FROM post AS A,post_attributes AS B,user AS C
+		WHERE A.title
+		like "%"#{title}"%"
+		AND A.id=B.postId
+		AND B.userId=C.id
+		order by update_at desc
+		limit #{start},#{pageSize}
+	</select>
+	
+	<!-- 浏览记录 -->
+	<insert id="insertPview">
+		insert into p_view
+		(postId,viewTime,ip)
+		values(#{postId},#{viewTime},#{ip});
+	</insert>
+	<select id="countPview" resultType="_int">
+		SELECT count(*) FROM p_view where postId=#{postId} and ip=#{ip}
+	</select>
+	<update id="updatePview">
+		update p_view set viewTime=#{viewTime} where postId=#{postId} and ip=#{ip}
+	</update>
+	<select id="getPviewTime" resultType="String">
+		SELECT viewTime FROM p_view where postId=#{postId} and ip=#{ip}
+	</select>
+	<!-- <delete id="deletePvisit" parameterType="String">
+		delete from p_view where viewTime-#{viewTime}<=0
+	</delete> -->
+	<!-- 收藏夹 -->
+	<insert id="insertPcollect">
+		insert into p_collect (postId,userId) values(#{postId},#{userId});
+	</insert>
+	<update id="updateAddCollect" parameterType="_int">
+		update post_attributes set collect=collect+1 where postId=#{postId}
+	</update>
+	<select id="countPcollectByUserId" resultType="_int">
+		SELECT count(*) FROM p_collect where userId=#{userId}
+	</select>
+	<select id="countIsPcollectByUserIdAndPostId" resultType="_int">
+		SELECT count(*) FROM p_collect where userId=#{userId} and postId=#{postId}
+	</select>
+	<select id="countPcollectByPostId" resultType="_int">
+		SELECT collect FROM post_attributes where postId=#{postId}
+	</select>
+	<delete id="delPcollect" parameterType="_int">
+		delete from p_collect where postId=#{postId} and userId=#{userId}
+	</delete>
+	<update id="updateDelCollect" parameterType="_int">
+		update post_attributes set collect=collect-1 where postId=#{postId}
+	</update>
+	<!-- 更新文章 -->
+	<update id="update" parameterType="com.sunjinxu.pojo.Post">
+		update
+		post,post_attributes,tag,type,post_tag set
+		post.title=#{title},post.summary=#{summary},post.content=#{content},post.update_at=#{update_at},post_attributes.typeId=#{typeId},post_attributes.imgPath=#{imgPath},tag.tagName=#{tagName}
+		where post.id=#{id}
+		and post_attributes.postId=post.id
+		and
+		post_attributes.typeId=type.id
+		and post_tag.postId=post.id
+		and
+		post_tag.tagId=tag.id;
+	</update>
+	<update id="updateView" parameterType="_int">
+		update post_attributes set view=view+1 where postId=#{postId}
+	</update>
+	<!-- 删除一篇文章 -->
+	<delete id="delete" parameterType="_int">
+		delete from post where
+		id=#{id}
+	</delete>
+	<delete id="deleteAttr" parameterType="_int">
+		delete from
+		post_attributes where postId=#{id}
+	</delete>
+	<delete id="deletePostTag" parameterType="_int">
+		delete from post_tag
+		where postId=#{id}
+	</delete>
+	<delete id="updateTagFrequencyDown" parameterType="_int">
+		update tag set
+		frequency=frequency-1 where id=#{id}
+	</delete>
+	<update id="updateTagFrequencyUp" parameterType="int">
+		update tag set
+		frequency=frequency+1 where tagName=#{tagName}
+	</update>
+	<delete id="deleteTag0" parameterType="_int">
+		delete from tag where
+		id=#{id}
+	</delete>
+	<select id="countTags" resultType="int">
+		SELECT count(id) FROM tag
+	</select>
+	<select id="checkTag" resultType="int">
+		SELECT count(id) FROM tag WHERE
+		tagName=#{tagName}
+	</select>
+	<select id="getTagId" resultType="int">
+		SELECT id FROM tag WHERE
+		tagName=#{tagName}
+	</select>
+	<select id="getTagIdByPostId" resultType="int">
+		SELECT tagId FROM
+		post_tag WHERE postId=#{id}
+	</select>
+	
+	<!-- 文章总数 -->
+	<select id="total" resultType="int">
+		select count(id) from post
+	</select>
+	<select id="searchTotal" resultType="int">
+		select count(id) from post
+		WHERE title like "%"#{title}"%"
+	</select>
+	<select id="countByUserId" resultType="int">
+		select count(postId) from
+		post_attributes where userId=#{id}
+	</select>
+
+	<select id="findAllTagByDesc" parameterType="int"
+		resultType="java.util.LinkedHashMap">
+		SELECT tagName FROM tag ORDER BY frequency DESC LIMIT
+		#{limit}
+	</select>
+	<select id="findAllType" resultMap="getType">
+		select id,typeCode,typeName
+		from type
+	</select>
+
+	<resultMap id="getType" type="Type">
+		<id property="id" column="id" />
+		<result property="typeCode" column="typeCode" />
+		<result property="typeName" column="typeName" />
+	</resultMap>
+</mapper>

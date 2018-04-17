@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sunjinxu.mapper.UserMapper">
+	<!-- 根据ID获取用户的文章 -->
+	<select id="listMyPost" parameterType="_int" resultType="com.sunjinxu.pojo.User">
+		SELECT
+		A.id,A.title,A.summary,B.collect,A.update_at,B.imgPath,B.typeId,B.userId,B.view,
+		(case when C.userName is null then C.account ELSE C.userName end) AS
+		userName
+		FROM post AS A,post_attributes AS B,user AS C
+		WHERE
+		A.id=B.postId AND
+		B.userId=C.id
+		and B.userId=#{id}
+	</select>
+	<!-- 通过ID、账号获取整个用户 -->
+	<select id="getUserByAccount" parameterType="String"
+		resultType="com.sunjinxu.pojo.User">
+		SELECT * FROM user LEFT JOIN user_attr on user.id = user_attr.userId WHERE user.account = #{account}
+	</select>
+	<select id="getUserById" parameterType="int" resultType="com.sunjinxu.pojo.User">
+		SELECT * FROM user LEFT JOIN user_attr on user.id = user_attr.userId WHERE user.id = #{id}
+	</select>
+	<!-- 登录 -->
+	<select id="login" parameterType="String" resultType="com.sunjinxu.pojo.User">
+		SELECT * FROM user LEFT JOIN user_attr on user.id = user_attr.userId 
+		WHERE user.account = #{account}
+		AND user.password = #{password}
+	</select>
+	<!-- 注册校验 -->
+	<select id="checkUserEnabled" parameterType="String" resultType="boolean">
+		SELECT count(account) FROM user WHERE account = #{account} AND status
+		= 1
+	</select>
+	<select id="checkAccountExist" parameterType="String"
+		resultType="boolean">
+		SELECT count(account) FROM user WHERE account = #{account}
+	</select>
+	<select id="checkUserNameExist" parameterType="String"
+		resultType="boolean">
+		SELECT count(userName) FROM user WHERE userName =
+		#{userName}
+	</select>
+	<select id="checkEmailExist" parameterType="String" resultType="boolean">
+		SELECT count(email) FROM user WHERE email = #{email}
+	</select>
+	<!-- 注册 -->
+	<insert id="regist" parameterType="com.sunjinxu.pojo.User" 
+		useGeneratedKeys="true" keyProperty="id">
+		insert into user
+		(account,password,userName,create_at,update_at,email)
+		values(#{account},#{password},#{userName},#{create_at},#{update_at},#{email})
+	</insert>
+	<insert id="regUserInfo" parameterType="com.sunjinxu.pojo.User">
+		insert into user_attr(userId) 
+		values(#{id})
+	</insert>
+	<!-- 更新信息 -->
+	<update id="chgUserInfo" parameterType="com.sunjinxu.pojo.User">
+		update user,user_attr set 
+		user.userName=#{userName},
+		user.update_at=#{update_at},
+		user.email=#{email},
+		user.phone=#{phone},
+		user_attr.business=#{business},
+		user_attr.sex=#{sex},
+		user_attr.birthday=#{birthday}
+		where user.id=#{id}
+		and user.id=user_attr.userId
+	</update>
+</mapper>

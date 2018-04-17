@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sunjinxu.mapper.CommentMapper">
+	<insert id="insert" parameterType="com.sunjinxu.pojo.Comment"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into comment
+		(content,userId,create_at)
+		values(#{content},#{userId},#{create_at})
+	</insert>
+	<insert id="insertCommentAttr" parameterType="com.sunjinxu.pojo.Comment">
+		insert into
+		comment_attr (commentId,postId,parentId)
+		values(#{id},#{postId},#{parentId});
+	</insert>
+	<delete id="delete" parameterType="com.sunjinxu.pojo.Comment">
+		delete from comment where id=#{id}
+	</delete>
+	<delete id="deleteCommentAttr" parameterType="com.sunjinxu.pojo.Comment">
+		delete from comment_attr where commentId=#{id}
+	</delete>
+	
+	<select id="get" parameterType="_int" resultType="com.sunjinxu.pojo.Comment">
+		select
+		`comment`.id,comment_attr.parentId,comment.userId,(case when user.userName
+		is null then
+		user.account ELSE user.userName end) AS
+		userName,`user`.avatar,
+		comment.content,comment.praise,comment.create_at,comment_attr.postId,post.title
+		from comment,`user`,comment_attr,post
+		where comment.id=#{id}
+		and
+		comment.userId=`user`.id
+		and comment_attr.postId=post.id
+		and
+		comment_attr.commentId=`comment`.id
+		and post.`status`=2
+	</select>
+	<!-- 所有动态 -->
+	<select id="list" resultType="com.sunjinxu.pojo.Comment">
+		select comment.id,comment.content,comment.praise,comment.create_at,comment.userId,
+		(case when user.userName is null then user.account ELSE user.userName end) AS userName,
+		user.avatar as userAvatar
+		from comment,user
+		where comment.userId=user.id
+		order by comment.create_at desc
+		limit #{start},#{pageSize}
+	</select>
+	<!-- 所有动态 -->
+	<select id="listAll" resultType="com.sunjinxu.pojo.Comment">
+		select comment.id,comment.content,comment.praise,comment.create_at,comment.userId,
+		(case when user.userName is null then user.account ELSE user.userName end) AS userName,
+		user.avatar as userAvatar
+		from comment,user
+		where comment.userId=user.id
+		order by comment.create_at desc
+	</select>
+	
+	<select id="total" resultType="int">
+		select count(id) from comment
+	</select>
+	<select id="countByUserId" resultType="int">
+		select count(id) from comment where userId=#{id}
+	</select>
+	<!-- 我的动态 -->
+	<select id="listByUserId" parameterType="_int" resultType="com.sunjinxu.pojo.Comment">
+		select
+		comment.id,comment.content,comment.praise,comment.create_at,comment.userId,(case when user.userName is null then user.account ELSE user.userName end) AS userName,user.avatar
+		from comment,user
+		where comment.userId=#{userId}
+		and comment.userId=user.id
+	</select>
+	<!-- 空间留言 -->
+	<!-- 文章留言 -->
+	<select id="listByPostId" parameterType="_int" resultType="com.sunjinxu.pojo.Comment">
+		select
+		comment.id,comment.content,comment.praise,comment.create_at,comment.userId,(case when user.userName is null then user.account ELSE user.userName end) AS userName,user.avatar
+		from comment,user,comment_attr
+		where comment_attr.postId=123
+		and comment.userId=user.id
+		and comment_attr.commentId=comment.id
+	</select>
+
+	<select id="subTotal" parameterType="_int" resultType="int">
+		select count(comment_attr.parentId) from comment_attr where comment_attr.parentId=#{id}
+	</select>
+</mapper>

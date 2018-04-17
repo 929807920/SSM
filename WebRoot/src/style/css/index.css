@@ -1,0 +1,59 @@
+#title {
+	font-size: 16px;
+	font-weight: bold;
+	color: green;
+}
+
+.auth {
+	float: left;
+	margin-left: 4px;
+}
+
+.update_at {
+	float: right;
+	margin-left: 4px;
+}
+
+.more {
+	float: right;
+}
+
+.view {
+	float: right;
+	margin-left: 4px;
+}
+
+.heart {
+	float: right;
+	margin-left: 4px;
+}
+
+.row {
+	padding-bottom: 0ex;
+}
+
+#postlist {
+	padding-bottom: 10px;
+}
+
+.nano {
+	width: 100%;
+	height: 330px;
+	font-size: 12px;
+	font-family: 微软雅黑;
+	border-radius: 8px;
+}
+
+.nano .content {
+	padding: 10px;
+}
+
+.nano .pane {
+	width: 4px;
+	right: 1px;
+	margin: 1px;
+}
+
+.nano .slider {
+	
+}

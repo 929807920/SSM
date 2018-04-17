@@ -1,0 +1,32 @@
+@charset "UTF-8";
+
+.table table-striped {
+	word-wrap: break-word;
+	word-break: break-all;
+}
+
+.td {
+	width: 9%;
+}
+
+#title {
+	font-size: 18px;
+	font-weight: bold;
+	color: green;
+}
+.listatt{
+	float:right;
+}
+#footer {
+	position: fixed;
+	bottom: 0;
+}
+.table table-hover{
+	border:0px
+}
+.btn-primary{
+	float: right;
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}

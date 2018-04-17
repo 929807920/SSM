@@ -1,0 +1,12 @@
+body {
+  padding-top: 80px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-horizontal {
+  max-width: 400px;
+  padding: 15px;
+  margin: 0 auto;
+  background-color:#DCDCDC;
+}
